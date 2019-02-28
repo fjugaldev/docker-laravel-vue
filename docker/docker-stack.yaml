@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      args:
+        timezone: Europe/Madrid
+      context: /Volumes/HDD/www/html/goi-docker/docker/app
+    container_name: goi_app
+    depends_on:
+    - mysql
+    environment:
+      MYSQL_DATABASE: goi_db
+      MYSQL_PASSWORD: '@G01D4t4B4s3'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: goi_dbuser
+      NGINX_HOST: goi.loc
+      PHP_IDE_CONFIG: serverName=goi.loc
+      TZ: Europe/Madrid
+      XDEBUG_CONFIG: remote_host=172.17.0.1
+      XDEBUG_REMOTE_HOST: 172.17.0.1
+    volumes:
+    - /Volumes/HDD/www/html/goi-docker:/var/www/html:rw,cached
+  mysql:
+    build:
+      context: /Volumes/HDD/www/html/goi-docker/docker/db
+      dockerfile: Dockerfile.mysql
+    container_name: goi_mysql
+    environment:
+      MYSQL_DATABASE: goi_db
+      MYSQL_PASSWORD: '@G01D4t4B4s3'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: goi_dbuser
+      NGINX_HOST: goi.loc
+      TZ: Europe/Madrid
+      XDEBUG_REMOTE_HOST: 172.17.0.1
+    ports:
+    - 3306:3306/tcp
+    volumes:
+    - /Volumes/HDD/www/html/goi-docker/.data/mysql:/var/lib/mysql:rw
+  nginx:
+    build:
+      args:
+        nginx_host: goi.loc
+      context: /Volumes/HDD/www/html/goi-docker/docker/nginx
+    command: /bin/bash -c "envsubst '$$NGINX_HOST' < /etc/nginx/conf.d/default.template
+      > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    container_name: goi_nginx
+    depends_on:
+    - app
+    environment:
+      MYSQL_DATABASE: goi_db
+      MYSQL_PASSWORD: '@G01D4t4B4s3'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: goi_dbuser
+      NGINX_HOST: goi.loc
+      TZ: Europe/Madrid
+      XDEBUG_REMOTE_HOST: 172.17.0.1
+    ports:
+    - 8008:80/tcp
+    - 443:443/tcp
+    volumes:
+    - /Volumes/HDD/www/html/goi-docker/docker/nginx/default.template:/etc/nginx/conf.d/default.template:rw
+    - nginx_log:/var/log/nginx:rw
+    - /Volumes/HDD/www/html/goi-docker/public:/var/www/html/public:ro
+version: '3.0'
+volumes:
+  nginx_log: {}
+

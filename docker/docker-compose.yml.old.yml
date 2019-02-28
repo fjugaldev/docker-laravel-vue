@@ -1,0 +1,36 @@
+version: '3'
+services:
+
+  php:
+    container_name: goi_php
+    image: jguyomard/laravel-php:7.2
+    volumes:
+      - ./:/var/www/
+      - $HOME/.composer/:$HOME/.composer/
+    environment:
+      - "DB_HOST=mysql"
+      - "DB_DATABASE=goi_db"
+      - "DB_USERNAME=goi_dbuser"
+      - "DB_PASSWORD=goidbpsw"
+
+  nginx:
+    container_name: goi_nginx
+    image: jguyomard/laravel-nginx:1.13
+    volumes:
+      - ./:/var/www/
+      - $HOME/.composer/:$HOME/.composer/
+    ports:
+      - 8080:80
+
+  mysql:
+    container_name: goi_mysql
+    image: mysql:5.7
+    volumes:
+      - ./.data/mysql:/var/lib/mysql:rw
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_DATABASE=goi_db"
+      - "MYSQL_USER=goi_dbuser"
+      - "MYSQL_PASSWORD=goidbpsw"
+    ports:
+        - "3306:3306"
